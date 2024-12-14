@@ -18,7 +18,7 @@ import ollama
 logging.basicConfig(level=logging.INFO)
 
 # Constants
-DOC_PATH = "./data/BOI.pdf"
+DOC_PATH = "./data/SRS_ESS_V1.0_Phase1-A.pdf"
 MODEL_NAME = "llama3.2"
 EMBEDDING_MODEL = "nomic-embed-text"
 VECTOR_STORE_NAME = "simple-rag"
@@ -122,7 +122,7 @@ Question: {question}
 
 
 def main():
-    st.title("Document Assistant")
+    st.title("ESS Assistant")
 
     # User input
     user_input = st.text_input("Enter your question:", "")

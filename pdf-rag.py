@@ -9,7 +9,7 @@
 from langchain_community.document_loaders import UnstructuredPDFLoader
 from langchain_community.document_loaders import OnlinePDFLoader
 
-doc_path = "./data/BOI.pdf"
+doc_path = "./data/SRS_ESS_V1.0_Phase1-A.pdf"
 model = "llama3.2"
 
 # Local PDF file uploads
@@ -105,6 +105,6 @@ chain = (
 # res = chain.invoke(
 #     input=("what are the main points as a business owner I should be aware of?",)
 # )
-res = chain.invoke(input=("how to report BOI?",))
+res = chain.invoke(input=("how to apply for leave?",))
 
 print(res)
