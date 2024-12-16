@@ -87,6 +87,7 @@ ipython_config.py
 #   intended to run in multiple environments; otherwise, check them in:
 # .python-version
 Scripts/
+chroma_db/
 
 # pipenv
 #   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
@@ -169,3 +170,4 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 chatbot/pyvenv.cfg
+chroma_db/chroma.sqlite3

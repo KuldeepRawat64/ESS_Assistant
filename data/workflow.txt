@@ -1,0 +1,24 @@
+Workflow title: Advance Request
+ID: 1
+Category: Advance Request
+
+Content: 
+1. **Step 1: Select Advance Sub-type**
+   Question: "Please select the advance sub-type (e.g., personal loan, salary advance)."
+   Answer: "User selects their desired advance type."
+
+2. **Step 2: Select Requested Amount**
+   Question: "Please enter the amount you wish to request as an advance."
+   Answer: "User specifies the amount they wish to request."
+
+3. **Step 3: Calculate EMI Schedule**
+   Question: "Do you want to calculate the EMI schedule for the requested amount?"
+   Answer: "User calculates the EMI schedule."
+
+4. **Step 4: Preview Application**
+   Question: "Would you like to preview your application before submitting?"
+   Answer: "User reviews all entered information (advance type, amount, EMI schedule)."
+
+5. **Step 5: Submit Application**
+   Question: "Do you wish to submit your advance request application?"
+   Answer: "User submits the application for approval."

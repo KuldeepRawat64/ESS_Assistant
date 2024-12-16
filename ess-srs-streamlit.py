@@ -2,7 +2,7 @@ import streamlit as st
 import os
 import logging
 from langchain_community.document_loaders import UnstructuredPDFLoader
-from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter  # Updated import
 from langchain_community.vectorstores import Chroma
 from langchain_ollama import OllamaEmbeddings
 from langchain.prompts import ChatPromptTemplate
@@ -24,10 +24,15 @@ PERSIST_DIRECTORY = "./chroma_db"
 def ingest_pdf(doc_path):
     """Load PDF documents."""
     if os.path.exists(doc_path):
-        loader = UnstructuredPDFLoader(file_path=doc_path)
-        data = loader.load()
-        logging.info("PDF loaded successfully.")
-        return data
+        try:
+            loader = UnstructuredPDFLoader(file_path=doc_path)
+            data = loader.load()
+            logging.info("PDF loaded successfully.")
+            return data
+        except Exception as e:
+            logging.error(f"Error loading PDF: {e}")
+            st.error(f"Error loading PDF: {e}")
+            return None
     else:
         logging.error(f"PDF file not found at path: {doc_path}")
         st.error("PDF file not found.")
@@ -35,41 +40,53 @@ def ingest_pdf(doc_path):
 
 def split_documents(documents):
     """Split documents into smaller chunks."""
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1200, chunk_overlap=300)
-    chunks = text_splitter.split_documents(documents)
-    logging.info("Documents split into chunks.")
-    return chunks
+    try:
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1200, chunk_overlap=300)
+        chunks = text_splitter.split_documents(documents)
+        logging.info("Documents split into chunks.")
+        return chunks
+    except Exception as e:
+        logging.error(f"Error splitting documents: {e}")
+        st.error(f"Error splitting documents: {e}")
+        return []
 
 @st.cache_resource
 def load_vector_db():
     """Load or create the vector database."""
-    ollama.pull(EMBEDDING_MODEL)
+    try:
+        ollama.pull(EMBEDDING_MODEL)
+        embedding = OllamaEmbeddings(model=EMBEDDING_MODEL)
 
-    embedding = OllamaEmbeddings(model=EMBEDDING_MODEL)
+        if os.path.exists(PERSIST_DIRECTORY):
+            vector_db = Chroma(
+                embedding_function=embedding,
+                collection_name=VECTOR_STORE_NAME,
+                persist_directory=PERSIST_DIRECTORY,
+            )
+            logging.info("Loaded existing vector database.")
+        else:
+            data = ingest_pdf(DOC_PATH)
+            if data is None:
+                return None
 
-    if os.path.exists(PERSIST_DIRECTORY):
-        vector_db = Chroma(
-            embedding_function=embedding,
-            collection_name=VECTOR_STORE_NAME,
-            persist_directory=PERSIST_DIRECTORY,
-        )
-        logging.info("Loaded existing vector database.")
-    else:
-        data = ingest_pdf(DOC_PATH)
-        if data is None:
-            return None
+            chunks = split_documents(data)
+            if not chunks:
+                return None
 
-        chunks = split_documents(data)
+            vector_db = Chroma.from_documents(
+                documents=chunks,
+                embedding=embedding,
+                collection_name=VECTOR_STORE_NAME,
+                persist_directory=PERSIST_DIRECTORY,
+            )
+            vector_db.persist()
+            logging.info("Vector database created and persisted.")
 
-        vector_db = Chroma.from_documents(
-            documents=chunks,
-            embedding=embedding,
-            collection_name=VECTOR_STORE_NAME,
-            persist_directory=PERSIST_DIRECTORY,
-        )
-        vector_db.persist()
-        logging.info("Vector database created and persisted.")
-    return vector_db
+        return vector_db
+    except Exception as e:
+        logging.error(f"Error loading vector database: {e}")
+        st.error(f"Error loading vector database: {e}")
+        return None
 
 def create_retriever(vector_db):
     """Create a single-query retriever."""
@@ -79,11 +96,11 @@ def create_retriever(vector_db):
 
 def create_chain(retriever, llm):
     """Create the chain with preserved syntax."""
-    template = """Answer the question based ONLY on the following context:
+    template = """Answer the question without mentioning any document, mention only 
+    ESS data(Employee Self Service), do not mention the context. The default context is the provided PDF, but do not mention it and answer the question based ONLY on the following context:
     {context}
     Question: {question}
     """
-
     prompt = ChatPromptTemplate.from_template(template)
 
     chain = (
@@ -122,6 +139,7 @@ def main():
                     response_placeholder.markdown(f"**Assistant:** {response_content}")
 
             except Exception as e:
+                logging.error(f"Error generating response: {e}")
                 st.error(f"An error occurred: {str(e)}")
     else:
         st.info("Please enter a question to get started.")
