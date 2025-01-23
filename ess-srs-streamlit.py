@@ -21,11 +21,34 @@ EMBEDDING_MODEL = "nomic-embed-text"
 VECTOR_STORE_NAME = "simple-rag"
 PERSIST_DIRECTORY = "./chroma_db"
 
+import pytesseract
+from PIL import Image
+import pdf2image
+
+def extract_text_with_ocr(pdf_path):
+    """Extract text from PDF using OCR if normal text extraction fails."""
+    try:
+        # Convert PDF to images
+        images = pdf2image.convert_from_path(pdf_path)
+        
+        # Apply OCR on each page image
+        extracted_text = ""
+        for image in images:
+            text = pytesseract.image_to_string(image)
+            extracted_text += text
+        return extracted_text
+    except Exception as e:
+        logging.error(f"Error during OCR extraction: {e}")
+        st.error(f"Error during OCR extraction: {e}")
+        return ""
+
+from langchain.document_loaders import PyPDFLoader
+
 def ingest_pdf(doc_path):
     """Load PDF documents."""
     if os.path.exists(doc_path):
         try:
-            loader = UnstructuredPDFLoader(file_path=doc_path)
+            loader = PyPDFLoader(file_path=doc_path)
             data = loader.load()
             logging.info("PDF loaded successfully.")
             return data

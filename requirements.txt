@@ -13,5 +13,4 @@ pdfplumber
 sentence-transformers
 elevenlabs
 streamlit
-langchain_chroma
-vulkan
+pikepdf
