@@ -171,3 +171,4 @@ cython_debug/
 #.idea/
 chatbot/pyvenv.cfg
 chroma_db/chroma.sqlite3
+chroma_db/chroma.sqlite3
